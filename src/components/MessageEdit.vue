@@ -37,11 +37,12 @@ export default {
         return{
             newTitle: "",
             newContent: "",
+            serverUrl: "http://localhost/api/"
         }
     },
     methods:{
         editMessage(){
-            const api = `/api/editComment`;
+            const api = `${this.serverUrl}editComment`;
             console.log(api);
             const vm = this;
             const data = {

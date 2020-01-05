@@ -37,13 +37,13 @@ export default {
                 pwd: "",
             },
             message: "",
-            token: ""
-
+            token: "",
+            serverUrl: "http://localhost/api/"
         }
     },
     methods:{
         login(){
-            const api = `/api/logIn`;
+            const api = `${this.serverUrl}logIn`;
             console.log(api);
             const vm = this;
             console.log(vm.follower);

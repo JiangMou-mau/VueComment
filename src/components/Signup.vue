@@ -55,13 +55,13 @@ export default {
 
             },
             message: "",
-            token: ""
-
+            token: "",
+            serverUrl: "http://localhost/api/"
         }
     },
     methods:{
         Signup(){
-            const api = `/api/signUp`;
+            const api = `${this.serverUrl}signUp`;
             console.log(api);
             const vm = this;
             vm.$http.post(api, vm.follower).then((res) => {

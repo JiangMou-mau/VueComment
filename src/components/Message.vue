@@ -36,21 +36,22 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="comment in comments" :key="comment.cid">
+                    <tr v-for="(comment, index) in comments" :key="comment.cid">
                         <td>{{ comment.name }}</td>
                         <td>{{ comment.title}}</td>
                         <td>{{ comment.content }}</td>
                         
-                        <td>
+                        <td v-if="comment.cfid == userData.fid">
                             <td class="btn-group" role="group">
-                            <router-link v-if="comment.cfid == userData.fid" class="btn btn-outline-primary btn-md" :to="{ name: 'MessageEdit', params: { id: comment.cid } }">編輯</router-link>
-                            <button v-if="comment.cfid == userData.fid" type="button" class="btn btn-outline-danger btn-md" @click="deleteComment(comment.cid) ">刪除</button>
+                            <router-link class="btn btn-outline-primary btn-md" :to="{ name: 'MessageEdit', params: { id: comment.cid } }">編輯</router-link>
+                            <button type="button" class="btn btn-outline-danger btn-md" @click="deleteComment(index)">刪除</button>
                         </td>
                     </tr>
                     
                 </tbody>
             </table>
         </div> 
+        <button v-if="!finished && comments.length > 0" @click="getMessage(comments[comments.length - 1].cid)">載入更多</button>
    
     
   </div>
@@ -65,6 +66,8 @@ export default {
             newContent: "",
             userData: null,
             comments: [],
+            finished: false,
+            serverUrl: "http://localhost/api/"
         }
     },
     mounted(){
@@ -72,7 +75,7 @@ export default {
     },
     methods:{
         getUserData(){
-            const api = `/api/getUserData`;
+            const api = `${this.serverUrl}getUserData`;
             console.log(api);
             const vm = this;
             vm.$http.get(api,{ headers: { 'Authorization':'bearer'+ localStorage['token'] } }).then((res) => {
@@ -83,20 +86,30 @@ export default {
                 console.log(error.data);
             });
         },
-        getMessage(){
-            const api = `/api/showComment`;
+        getMessage(cid = null){
+            var api = `${this.serverUrl}showComment`;
+            if(cid != null) {
+                api += "?cid=" + cid;
+            }
             console.log(api);
             const vm = this;
             vm.$http.get(api,{ headers: { 'Authorization':'bearer'+ localStorage['token'] } }).then((res) => {
-                vm.comments = res.data;
+                if (cid == null) {
+                    vm.comments = res.data;
+                } else {
+                    vm.comments.push(...res.data);
+                }
                 
+                if (res.data.length < 20) {
+                    vm.finished = true;
+                }
             }).catch(error => {
                 // vm.message = error.data;
                 console.log(error.data);
             });
         },
         leaveMessage(){
-            const api = `/api/comment`;
+            const api = `${this.serverUrl}comment`;
             const vm = this;
             const data = {
                 title: this.newTitle,
@@ -113,8 +126,8 @@ export default {
             });
 
         },
-        deleteComment(delCid){
-            const api = `/api/deleteComment?cid=`+delCid;
+        deleteComment(index) {
+            const api = `${this.serverUrl}deleteComment?cid=${this.comments[index].cid}`;
             const vm = this;
             const data = {
                 title: this.newTitle,
@@ -123,6 +136,7 @@ export default {
             console.log(api);
             vm.$http.delete(api, { headers: { 'Authorization':'bearer'+ localStorage['token'] } }).then((res) => {
                  alert(res.data);
+                vm.comments.splice(index, 1);
             }).catch(error => {
                 // vm.message = error.data;
                 console.log(error.data);
